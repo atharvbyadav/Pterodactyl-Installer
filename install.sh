@@ -62,7 +62,7 @@ echo -e "${GREEN}Detected OS: $OS${NC}"
 echo -e "${BLUE}Note:${NC} Arch/Fedora are supported for development only."
 echo -e "${BLUE}Note:${NC} Faster breaking changes, PHP jumps, and repo instability may occur."
 echo -e "${BLUE}Note:${NC} Best production OS: Ubuntu 22.04 LTS or Debian 12."
-read -p "Press ENTER to continue or CTRL+C to abort..."
+read -p "Press ENTER to continue or CTRL+C to abort..." </dev/tty
 
 # -------------------------
 # FUNCTIONS
@@ -217,7 +217,7 @@ echo "Select what you want to install:"
 echo "1) Install Panel Only"
 echo "2) Install Wings Only"
 echo "3) Install Panel + Wings"
-read -p "Choose: " CHOICE
+read -p "Choose: " CHOICE </dev/tty
 
 case $CHOICE in
   1)
