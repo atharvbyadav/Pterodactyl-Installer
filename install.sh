@@ -103,11 +103,28 @@ install_services() {
 }
 
 disable_apache() {
-  if systemctl list-unit-files | grep -q apache2.service; then
-    echo -e "${BLUE}Disabling Apache...${NC}"
-    systemctl stop apache2 2>/dev/null || true
-    systemctl disable apache2 2>/dev/null || true
-  fi
+  echo -e "${BLUE}Removing Apache if present...${NC}"
+
+  systemctl stop apache2 2>/dev/null || true
+  systemctl disable apache2 2>/dev/null || true
+
+  case $PM in
+    apt)
+      apt purge apache2 apache2-utils apache2-bin apache2.2-common -y 2>/dev/null || true
+      ;;
+    pacman)
+      pacman -Rns --noconfirm apache 2>/dev/null || true
+      ;;
+    dnf)
+      dnf remove -y httpd 2>/dev/null || true
+      ;;
+  esac
+}
+
+remove_nginx_default() {
+  echo -e "${BLUE}Removing Nginx default site...${NC}"
+  rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+  rm -f /etc/nginx/conf.d/default.conf 2>/dev/null || true
 }
 
 install_docker() {
@@ -196,7 +213,8 @@ server {
 EOF
 
   systemctl restart nginx
-  
+  systemctl restart php-fpm || true
+
   echo -e "${GREEN}Panel Installed → http://localhost${NC}"
 }
 
@@ -249,6 +267,7 @@ case $CHOICE in
     install_php
     install_services
     disable_apache
+    remove_nginx_default
     setup_database
     install_panel
     ;;
@@ -263,6 +282,7 @@ case $CHOICE in
     install_services
     install_docker
     disable_apache
+    remove_nginx_default
     setup_database
     install_panel
     install_wings
