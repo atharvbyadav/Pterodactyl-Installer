@@ -60,12 +60,12 @@ esac
 
 echo -e "${GREEN}Detected OS: $OS${NC}"
 echo -e "${BLUE}Note:${NC} Arch/Fedora are supported for development only."
-echo -e "${BLUE}Note:${NC} Faster breaking changes, PHP jumps, and repo instability may occur."
+echo -e "${BLUE}Note:${NC} Faster breaking changes, PHP jumps and repo instability may occur."
 echo -e "${BLUE}Note:${NC} Best production OS: Ubuntu 22.04 LTS or Debian 12."
 read -p "Press ENTER to continue or CTRL+C to abort..."
 
 # -------------------------
-# FUNCTIONS
+# INSTALL BASE
 # -------------------------
 
 install_base() {
@@ -83,6 +83,10 @@ install_base() {
   esac
 }
 
+# -------------------------
+# INSTALL PHP
+# -------------------------
+
 install_php() {
   case $PM in
     apt)
@@ -96,6 +100,10 @@ install_php() {
       ;;
   esac
 }
+
+# -------------------------
+# SERVICES
+# -------------------------
 
 install_services() {
   case $PM in
@@ -113,15 +121,27 @@ install_services() {
   systemctl enable mariadb redis nginx
 }
 
+# -------------------------
+# DOCKER
+# -------------------------
+
 install_docker() {
   curl -fsSL https://get.docker.com | bash
   systemctl enable docker
 }
 
+# -------------------------
+# COMPOSER
+# -------------------------
+
 install_composer() {
   curl -sS https://getcomposer.org/installer | php
   mv composer.phar /usr/local/bin/composer
 }
+
+# -------------------------
+# PANEL
+# -------------------------
 
 install_panel() {
 
@@ -175,6 +195,10 @@ EOF
   echo -e "${GREEN}Panel Installed → http://localhost${NC}"
 }
 
+# -------------------------
+# WINGS
+# -------------------------
+
 install_wings() {
 
   echo -e "${GREEN}Installing Wings...${NC}"
@@ -213,36 +237,21 @@ EOF
 # -------------------------
 
 echo
-echo "Select what you want to install:"
 echo "1) Install Panel Only"
 echo "2) Install Wings Only"
 echo "3) Install Panel + Wings"
 read -p "Choose: " CHOICE
 
+install_base
+install_php
+install_services
+install_docker
+
 case $CHOICE in
-  1)
-    install_base
-    install_php
-    install_services
-    install_panel
-    ;;
-  2)
-    install_base
-    install_docker
-    install_wings
-    ;;
-  3)
-    install_base
-    install_php
-    install_services
-    install_docker
-    install_panel
-    install_wings
-    ;;
-  *)
-    echo "Invalid choice"
-    exit 1
-    ;;
+  1) install_panel ;;
+  2) install_wings ;;
+  3) install_panel && install_wings ;;
+  *) echo "Invalid choice" ;;
 esac
 
 echo
