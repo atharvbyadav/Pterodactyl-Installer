@@ -1,7 +1,4 @@
 #!/bin/bash
-if [ ! -t 0 ]; then
-  exec </dev/tty
-fi
 # ==========================================================
 # Pterodactyl Universal Installer v3
 # Debian | Ubuntu | Arch | Fedora | RHEL | Alma | Rocky
@@ -65,7 +62,7 @@ echo -e "${GREEN}Detected OS: $OS${NC}"
 echo -e "${BLUE}Note:${NC} Arch/Fedora are supported for development only."
 echo -e "${BLUE}Note:${NC} Faster breaking changes, PHP jumps, and repo instability may occur."
 echo -e "${BLUE}Note:${NC} Best production OS: Ubuntu 22.04 LTS or Debian 12."
-read -p "Press ENTER to continue or CTRL+C to abort..." </dev/tty
+read -p "Press ENTER to continue or CTRL+C to abort..."
 
 # -------------------------
 # FUNCTIONS
@@ -220,7 +217,7 @@ echo "Select what you want to install:"
 echo "1) Install Panel Only"
 echo "2) Install Wings Only"
 echo "3) Install Panel + Wings"
-read -p "Choose: " CHOICE </dev/tty
+read -p "Choose: " CHOICE
 
 case $CHOICE in
   1)
