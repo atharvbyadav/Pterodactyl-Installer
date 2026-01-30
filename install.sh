@@ -65,7 +65,7 @@ echo -e "${BLUE}Note:${NC} Best production OS: Ubuntu 22.04 LTS or Debian 12."
 read -p "Press ENTER to continue or CTRL+C to abort..."
 
 # -------------------------
-# INSTALL BASE
+# FUNCTIONS
 # -------------------------
 
 install_base() {
@@ -83,66 +83,71 @@ install_base() {
   esac
 }
 
-# -------------------------
-# INSTALL PHP
-# -------------------------
-
 install_php() {
   case $PM in
-    apt)
-      apt install -y $PHP_PKGS
-      ;;
-    pacman)
-      pacman -S --noconfirm $PHP_PKGS
-      ;;
-    dnf)
-      dnf install -y $PHP_PKGS
-      ;;
+    apt) apt install -y $PHP_PKGS ;;
+    pacman) pacman -S --noconfirm $PHP_PKGS ;;
+    dnf) dnf install -y $PHP_PKGS ;;
   esac
 }
 
-# -------------------------
-# SERVICES
-# -------------------------
-
 install_services() {
   case $PM in
-    apt)
-      apt install -y $SRV_PKGS
-      ;;
-    pacman)
-      pacman -S --noconfirm $SRV_PKGS
-      ;;
-    dnf)
-      dnf install -y $SRV_PKGS
-      ;;
+    apt) apt install -y $SRV_PKGS ;;
+    pacman) pacman -S --noconfirm $SRV_PKGS ;;
+    dnf) dnf install -y $SRV_PKGS ;;
   esac
 
   systemctl enable mariadb nginx
   systemctl enable redis-server 2>/dev/null || systemctl enable redis
 }
 
-# -------------------------
-# DOCKER
-# -------------------------
+disable_apache() {
+  if systemctl list-unit-files | grep -q apache2.service; then
+    echo -e "${BLUE}Disabling Apache...${NC}"
+    systemctl stop apache2 2>/dev/null || true
+    systemctl disable apache2 2>/dev/null || true
+  fi
+}
 
 install_docker() {
   curl -fsSL https://get.docker.com | bash
   systemctl enable docker
 }
 
-# -------------------------
-# COMPOSER
-# -------------------------
-
 install_composer() {
   curl -sS https://getcomposer.org/installer | php
   mv composer.phar /usr/local/bin/composer
 }
 
-# -------------------------
-# PANEL
-# -------------------------
+setup_database() {
+
+  echo
+  echo -e "${GREEN}Database Configuration${NC}"
+
+  read -p "Database Name [panel]: " DB_NAME
+  DB_NAME=${DB_NAME:-panel}
+
+  read -p "Database User [pterodactyl]: " DB_USER
+  DB_USER=${DB_USER:-pterodactyl}
+
+  read -s -p "Database Password: " DB_PASS
+  echo
+  read -s -p "Confirm Database Password: " DB_PASS2
+  echo
+
+  if [[ "$DB_PASS" != "$DB_PASS2" ]]; then
+    echo -e "${RED}Passwords do not match.${NC}"
+    exit 1
+  fi
+
+  mysql -u root <<EOF
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;
+CREATE USER IF NOT EXISTS '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'127.0.0.1';
+FLUSH PRIVILEGES;
+EOF
+}
 
 install_panel() {
 
@@ -196,10 +201,6 @@ EOF
   echo -e "${GREEN}Panel Installed → http://localhost${NC}"
 }
 
-# -------------------------
-# WINGS
-# -------------------------
-
 install_wings() {
 
   echo -e "${GREEN}Installing Wings...${NC}"
@@ -243,16 +244,34 @@ echo "2) Install Wings Only"
 echo "3) Install Panel + Wings"
 read -p "Choose: " CHOICE
 
-install_base
-install_php
-install_services
-install_docker
-
 case $CHOICE in
-  1) install_panel ;;
-  2) install_wings ;;
-  3) install_panel && install_wings ;;
-  *) echo "Invalid choice" ;;
+  1)
+    install_base
+    install_php
+    install_services
+    disable_apache
+    setup_database
+    install_panel
+    ;;
+  2)
+    install_base
+    install_docker
+    install_wings
+    ;;
+  3)
+    install_base
+    install_php
+    install_services
+    install_docker
+    disable_apache
+    setup_database
+    install_panel
+    install_wings
+    ;;
+  *)
+    echo "Invalid choice"
+    exit 1
+    ;;
 esac
 
 echo
