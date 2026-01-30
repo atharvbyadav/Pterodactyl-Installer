@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ ! -t 0 ]; then
+  exec </dev/tty
+fi
 # ==========================================================
 # Pterodactyl Universal Installer v3
 # Debian | Ubuntu | Arch | Fedora | RHEL | Alma | Rocky
