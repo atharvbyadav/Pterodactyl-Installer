@@ -196,8 +196,7 @@ server {
 EOF
 
   systemctl restart nginx
-  systemctl restart php-fpm || true
-
+  
   echo -e "${GREEN}Panel Installed → http://localhost${NC}"
 }
 
