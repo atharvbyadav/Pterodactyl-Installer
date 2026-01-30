@@ -118,7 +118,8 @@ install_services() {
       ;;
   esac
 
-  systemctl enable mariadb redis nginx
+  systemctl enable mariadb nginx
+  systemctl enable redis-server 2>/dev/null || systemctl enable redis
 }
 
 # -------------------------
